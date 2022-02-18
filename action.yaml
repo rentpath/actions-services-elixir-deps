@@ -1,0 +1,49 @@
+name: Elixir Build and Cache Dependencies
+inputs:
+  elixir-version:
+    required: true
+    type: string
+  erlang-version:
+    required: true
+    type: string
+  mix-env:
+    required: true
+    type: string
+outputs:
+  cache-key:
+    value: ${{ steps.compute-cache-key.outputs.cache-key }}
+  cache-key-suffix:
+    value: ${{ steps.compute-cache-key.outputs.cache-key-suffix }}
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v2
+    - uses: erlef/setup-elixir@v1
+      with:
+        elixir-version: ${{ inputs.elixir-version }}
+        otp-version: ${{ inputs.erlang-version }}
+    - name: Compute Cache Key
+      id: compute-cache-key
+      run: |
+        elixir="elixir-${{ inputs.elixir-version }}"
+        erlang="erlang-${{ inputs.erlang-version }}"
+        mix_env="${{ inputs.mix-env }}"
+        runner="${{ runner.os }}"
+        suffix="${runner}_${erlang}_${elixir}_${mix_env}_${{ hashFiles('mix.lock') }}"
+        result="cache-deps_${suffix}"
+        echo "::set-output name=cache-key::$result"
+        echo "::set-output name=cache-key-suffix::$suffix"
+      shell: bash
+    - id: cache-dependencies
+      uses: actions/cache@v2
+      with:
+        key: ${{ steps.compute-cache-key.outputs.cache-key }}
+        path: |
+          deps
+          _build
+    - name: Compile Dependencies
+      env:
+        MIX_ENV: ${{ inputs.mix-env }}
+      if: steps.cache-dependencies.outputs.cache-hit == false
+      run: mix do deps.get, deps.compile --skip-umbrella-children
+      shell: bash
