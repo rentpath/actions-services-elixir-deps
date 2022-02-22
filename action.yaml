@@ -6,6 +6,10 @@ inputs:
   erlang-version:
     required: true
     type: string
+  cache-key-version:
+    description: 'Optionally specify a version for the cache.'
+    required: false
+    type: string
   mix-env:
     required: true
     type: string
@@ -22,6 +26,11 @@ runs:
       with:
         elixir-version: ${{ inputs.elixir-version }}
         otp-version: ${{ inputs.erlang-version }}
+    - name: Format Cache Version
+      id: format-cache-version
+      if: ${{ inputs.cache-key-version }}
+      run: echo "::set-output name=cache-key-version::_${{ inputs.cache-key-version }}"
+      shell: bash
     - name: Compute Cache Key
       id: compute-cache-key
       run: |
@@ -29,7 +38,8 @@ runs:
         erlang="erlang-${{ inputs.erlang-version }}"
         mix_env="${{ inputs.mix-env }}"
         runner="${{ runner.os }}"
-        suffix="${runner}_${erlang}_${elixir}_${mix_env}_${{ hashFiles('mix.lock') }}"
+        version="${{ steps.format-cache-version.outputs.cache-key-version }}"
+        suffix="${runner}_${erlang}_${elixir}_${mix_env}_${{ hashFiles('mix.lock') }}${version}"
         result="cache-deps_${suffix}"
         echo "::set-output name=cache-key::$result"
         echo "::set-output name=cache-key-suffix::$suffix"
