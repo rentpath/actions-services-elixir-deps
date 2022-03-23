@@ -13,6 +13,11 @@ inputs:
   mix-env:
     required: true
     type: string
+  skip-checkout:
+    description: 'Optionally skip performing the code checkout.'
+    required: false
+    default: false
+    type: boolean
 outputs:
   cache-key:
     value: ${{ steps.compute-cache-key.outputs.cache-key }}
@@ -22,6 +27,7 @@ runs:
   using: composite
   steps:
     - uses: actions/checkout@v2
+      if: inputs.skip-checkout == false
     - uses: erlef/setup-beam@v1
       with:
         elixir-version: ${{ inputs.elixir-version }}
