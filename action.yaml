@@ -26,8 +26,9 @@ outputs:
 runs:
   using: composite
   steps:
-    - uses: actions/checkout@v2
+    - name: Optionally check out code
       if: inputs.skip-checkout == false
+      uses: actions/checkout@v2
     - uses: erlef/setup-beam@v1
       with:
         elixir-version: ${{ inputs.elixir-version }}
