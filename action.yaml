@@ -13,11 +13,12 @@ inputs:
   mix-env:
     required: true
     type: string
+  # booleans are not supported so using a string value
   skip-checkout:
     description: 'Optionally skip performing the code checkout.'
     required: false
-    default: false
-    type: boolean
+    default: 'false'
+    type: string
 outputs:
   cache-key:
     value: ${{ steps.compute-cache-key.outputs.cache-key }}
@@ -27,7 +28,7 @@ runs:
   using: composite
   steps:
     - name: Optionally check out code
-      if: inputs.skip-checkout == false
+      if: inputs.skip-checkout == 'false'
       uses: actions/checkout@v2
     - uses: erlef/setup-beam@v1
       with:
