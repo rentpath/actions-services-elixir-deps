@@ -13,7 +13,9 @@ inputs:
   mix-env:
     required: true
     type: string
-  # booleans are not supported so using a string value
+  # using a string because booleans currently converted to strings
+  # within workflow dispatches and composite actions
+  # https://github.com/actions/runner/issues/1483
   skip-checkout:
     description: 'Optionally skip performing the code checkout.'
     required: false
