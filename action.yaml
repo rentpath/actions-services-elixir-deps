@@ -13,11 +13,14 @@ inputs:
   mix-env:
     required: true
     type: string
+  # using a string because booleans currently converted to strings
+  # within workflow dispatches and composite actions
+  # https://github.com/actions/runner/issues/1483
   skip-checkout:
     description: 'Optionally skip performing the code checkout.'
     required: false
-    default: false
-    type: boolean
+    default: 'false'
+    type: string
 outputs:
   cache-key:
     value: ${{ steps.compute-cache-key.outputs.cache-key }}
@@ -26,8 +29,9 @@ outputs:
 runs:
   using: composite
   steps:
-    - uses: actions/checkout@v2
-      if: inputs.skip-checkout == false
+    - name: Optionally check out code
+      if: inputs.skip-checkout == 'false'
+      uses: actions/checkout@v2
     - uses: erlef/setup-beam@v1
       with:
         elixir-version: ${{ inputs.elixir-version }}
