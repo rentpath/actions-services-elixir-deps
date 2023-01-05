@@ -21,6 +21,11 @@ inputs:
     required: false
     default: 'false'
     type: string
+  github-token:
+    description: 'Optionally rewrite all GitHub URLs to authenticate with a personal access token.'
+    required: false
+    default: 'false'
+    type: string
 outputs:
   cache-key:
     value: ${{ steps.compute-cache-key.outputs.cache-key }}
@@ -54,6 +59,11 @@ runs:
         echo "::set-output name=cache-key::$result"
         echo "::set-output name=cache-key-suffix::$suffix"
       shell: bash
+    - name: Configure Git Client with GitHub Auth Token
+      shell: bash
+      if: inputs.github-token != 'false'
+      run: |
+        git config --global url.https://${{ inputs.github-token }}@github.com/.insteadOf git@github.com:
     - id: cache-dependencies
       uses: actions/cache@v2
       with:
