@@ -41,6 +41,9 @@ runs:
       with:
         elixir-version: ${{ inputs.elixir-version }}
         otp-version: ${{ inputs.erlang-version }}
+      env:
+        LANG: en_US.UTF-8
+        LC_ALL: en_US.UTF-8
     - name: Format Cache Version
       id: format-cache-version
       if: ${{ inputs.cache-key-version }}
