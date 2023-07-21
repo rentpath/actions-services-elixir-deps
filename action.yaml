@@ -37,13 +37,10 @@ runs:
     - name: Optionally check out code
       if: inputs.skip-checkout == 'false'
       uses: actions/checkout@v3
-    - uses: erlef/setup-beam@v1
-      with:
-        elixir-version: ${{ inputs.elixir-version }}
-        otp-version: ${{ inputs.erlang-version }}
-      env:
-        LANG: en_US.UTF-8
-        LC_ALL: en_US.UTF-8
+    # - uses: erlef/setup-beam@v1
+    #   with:
+    #     elixir-version: ${{ inputs.elixir-version }}
+    #     otp-version: ${{ inputs.erlang-version }}
     - name: Format Cache Version
       id: format-cache-version
       if: ${{ inputs.cache-key-version }}
