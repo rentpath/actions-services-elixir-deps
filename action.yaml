@@ -21,13 +21,13 @@ inputs:
     required: false
     default: 'false'
     type: string
-  github-repository:
-    description: 'Optionally specify the repo (format: <organization/repository>) against which to authenticate. Must be included if the `github-token` option is used.'
+  app-installation-id:
+    description: 'Optionally rewrite all GitHub URLs to authenticate with an app-generated token.'
     required: false
     default: 'false'
     type: string
-  github-token:
-    description: 'Optionally rewrite all GitHub URLs to authenticate with a personal access token.'
+  app-installation-key:
+    description: 'Optionally rewrite all GitHub URLs to authenticate with an app-generated token.'
     required: false
     default: 'false'
     type: string
@@ -64,21 +64,22 @@ runs:
         echo "cache-key=$result" >> $GITHUB_OUTPUT
         echo "cache-key-suffix=$suffix" >> $GITHUB_OUTPUT
       shell: bash
+
+    - name: get app token from rossum
+      id: rossum
+      uses: getsentry/action-github-app-token@v1
+      with:
+        app_id: ${{ inputs.app-installation-id }}
+        private_key: ${{ inputs.app-installation-key }}
+
+    # NOTE: https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/choosing-permissions-for-a-github-app#choosing-permissions-for-git-access
     - name: Configure Git Client with GitHub Auth Token
       shell: bash
-      if: inputs.github-token != 'false'
       run: |
-        GITHUB_URL="https://${ACTOR}:${TOKEN}@github.com/"
-        git remote set-url origin "${GITHUB_URL}${OWNER_AND_REPOSITORY}"
-        git config --global url.${GITHUB_URL}.insteadOf git@github.com:
-        git config --global user.email "idg.dx.bot.workflow@rentpath.com"
-        git config --global user.name "rentpath-workflow-bot"
-        git config --global http.http.https://github.com/.extraheader "AUTHORIZATION: bearer ${DEPLOY_TOKEN}"
+        git config --global url.https://x-access-token:${TOKEN}@github.com/.insteadOf git@github.com:
         git config --global -l
       env:
-        ACTOR: rentpath-workflow-bot
-        TOKEN: ${{ inputs.github_token }}
-        OWNER_AND_REPOSITORY: ${{ inputs.github_repository }}
+        TOKEN: ${{ steps.rossum.outputs.token }}
 
     - id: cache-dependencies
       uses: actions/cache@v3
@@ -93,12 +94,3 @@ runs:
       if: steps.cache-dependencies.outputs.cache-hit == false
       run: mix do deps.get, deps.compile --skip-umbrella-children
       shell: bash
-
-    - name: Reset git configuration to ssh defaults
-      shell: bash
-      run: |
-        git config --unset --global url.url
-        git config --unset --global http.http
-        git config --unset --global user.email
-        git config --unset --global user.name
-        git config --global -l
