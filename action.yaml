@@ -41,7 +41,7 @@ runs:
   steps:
     - name: Optionally check out code
       if: inputs.skip-checkout == 'false'
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - uses: erlef/setup-beam@v1
       with:
         elixir-version: ${{ inputs.elixir-version }}
@@ -67,7 +67,7 @@ runs:
 
     - name: get app token from rossum
       id: rossum
-      uses: getsentry/action-github-app-token@v1
+      uses: getsentry/action-github-app-token@v3
       with:
         app_id: ${{ inputs.app-installation-id }}
         private_key: ${{ inputs.app-installation-key }}
@@ -82,7 +82,7 @@ runs:
         TOKEN: ${{ steps.rossum.outputs.token }}
 
     - id: cache-dependencies
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         key: ${{ steps.compute-cache-key.outputs.cache-key }}
         path: |
